@@ -2,28 +2,7 @@ import { useState, useEffect } from "react";
 
 const api = "https://api.unsplash.com/search/photos/";
 const accessKey = "coNDSSoNoGGxRxcRA8wxmXNEfFk9Gfnhq6UxJmkCmCI";
-
-// 舊搜尋
-// const SerachBox = ({ text, onSearchHandler, id }) => {
-//   return (
-//     <>
-//       <label htmlFor={id}></label>
-//       <input
-//         id="search"
-//         type="text"
-//         className="rounded-md border-2 p-2"
-//         value={text}
-//         onChange={onSearchHandler}
-//       />
-
-//       <hr className="w-full" />
-//       <p className="p-2">{text}</p>
-//     </>
-//   );
-// };
-
-// 新搜尋
-const SerachBox = ({ onSearchHandler, filterString }) => {
+const SearchBox = ({ onSearchHandler, filterString }) => {
   return (
     <>
       <label htmlFor="filter">搜尋</label>
@@ -48,34 +27,38 @@ const App = () => {
   //   setArr([...arr, arr.length + 1]);
   // }
 
-  // 舊搜尋
-  // const [text, setText] = useState("這是一段文字");
-  // const onSearchHandler = (e) => {
-  //   console.log(e.target.value);
-  //   setText(e.target.value);
-  // };
-
   const [filterString, setFilterString] = useState("animal");
-
+  const [jsonData, setJsonData] = useState([]);
   const onSearchHandler = (e) => {
     setFilterString(e.target.value);
   };
 
-  const getPhotos = async () => {
-    const result = await axios.get(
-      `${api}?client_id=${accessKey}&query=${filterString}`,
-    );
-    console.log(result);
-    // console.log(`${api}?client_id=${accessKey}&query=${filterString}`);
-  };
-  getPhotos();
+  useEffect(() => {
+    (async () => {
+      try {
+        const result = await axios.get(
+          `${api}?client_id=${accessKey}&query=${filterString}`,
+        );
+        console.log(result);
+        setJsonData(result.data.results);
+      } catch (error) {
+        console.log(error);
+      }
+      // console.log(`${api}?client_id=${accessKey}&query=${filterString}`);
+    })();
+  }, []);
 
   return (
     <>
-      <SerachBox
+      <SearchBox
         onSearchHandler={onSearchHandler}
         filterString={filterString}
       />
+      <div>
+        {jsonData.map((item) => {
+          <img src={item.urls.regular} alt="" />;
+        })}
+      </div>
 
       {/* 加減陣列 */}
       {/* <ul>
@@ -91,19 +74,6 @@ const App = () => {
           移除陣列資料
         </button>
       </div> */}
-
-      {/* 舊搜尋 */}
-      {/* <label htmlFor="search"></label>
-      <input
-        id="search"
-        type="text"
-        className="rounded-md border-2 p-2"
-        value={text}
-        onChange={onSearchHandler}
-      />
-      <hr className="w-full" />
-      <p className="p-2">{text}</p>
-      <SerachBox text={text} onChange={onSearchHandler} id="search2" /> */}
     </>
   );
 };
