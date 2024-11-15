@@ -4,10 +4,10 @@
 
 @layer base {
   html {
-    @apply h-full scroll-smooth;
+    @apply scroll-smooth;
   }
   #root {
-    @apply flex h-screen flex-col justify-center gap-4 p-4;
+    @apply flex flex-col justify-center gap-4;
   }
 }
 

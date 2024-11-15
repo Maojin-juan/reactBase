@@ -2,6 +2,19 @@ import { useState, useEffect } from "react";
 
 const api = "https://api.unsplash.com/search/photos/";
 const accessKey = "coNDSSoNoGGxRxcRA8wxmXNEfFk9Gfnhq6UxJmkCmCI";
+
+const Card = ({ item }) => {
+  return (
+    <div className="overflow-hidden rounded-xl border-2">
+      <img
+        src={item.urls.regular}
+        alt=""
+        className="h-[400px] w-full object-cover"
+      />
+    </div>
+  );
+};
+
 const SearchBox = ({ onSearchHandler, filterString }) => {
   return (
     <>
@@ -27,7 +40,7 @@ const App = () => {
   //   setArr([...arr, arr.length + 1]);
   // }
 
-  const [filterString, setFilterString] = useState("animal");
+  const [filterString, setFilterString] = useState("cat");
   const [jsonData, setJsonData] = useState([]);
   const onSearchHandler = (e) => {
     setFilterString(e.target.value);
@@ -54,9 +67,10 @@ const App = () => {
         onSearchHandler={onSearchHandler}
         filterString={filterString}
       />
-      <div>
+
+      <div className="grid grid-cols-2 gap-4 p-10">
         {jsonData.map((item) => {
-          <img src={item.urls.regular} alt="" />;
+          <Card item={item} />;
         })}
       </div>
 
