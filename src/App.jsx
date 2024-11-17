@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const api = "https://api.unsplash.com/search/photos/";
 const accessKey = "coNDSSoNoGGxRxcRA8wxmXNEfFk9Gfnhq6UxJmkCmCI";
@@ -23,8 +23,8 @@ const SearchBox = ({ onSearchHandler, filterString }) => {
         id="filter"
         type="text"
         className="rounded-md border-2 p-2"
-        value={filterString}
-        onChange={onSearchHandler}
+        defaultValue={filterString}
+        onKeyDown={onSearchHandler}
       />
     </>
   );
@@ -42,24 +42,62 @@ const App = () => {
 
   const [filterString, setFilterString] = useState("cat");
   const [jsonData, setJsonData] = useState([]);
+  const isLoading = useRef(false);
+  const currentPage = useRef(1);
   const onSearchHandler = (e) => {
-    setFilterString(e.target.value);
+    if (e.key === "Enter") {
+      setFilterString(e.target.value);
+    }
   };
 
+  const getPhotos = async (page = 1, isNew = true) => {
+    // 搜尋特定需要加入 query
+    try {
+      isLoading.current = true;
+      const result = await axios.get(
+        `${api}?client_id=${accessKey}&query=${filterString}&page=${page}`,
+      );
+
+      console.log(result);
+
+      setJsonData((preData) => {
+        if (isNew) return [...result.data.results];
+        return [...preData, ...result.data.results];
+      });
+
+      currentPage.current = page; // 每次都需要確認當前頁面
+
+      setTimeout(() => {
+        isLoading.current = false;
+      }, 1000);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const listRef = useRef(null);
   useEffect(() => {
-    (async () => {
-      try {
-        const result = await axios.get(
-          `${api}?client_id=${accessKey}&query=${filterString}`,
-        );
-        console.log(result);
-        setJsonData(result.data.results);
-      } catch (error) {
-        console.log(error);
+    getPhotos(1, true);
+
+    const scrollEvent = () => {
+      console.log("scroll", window.scrollY); // 垂直滾動的位置
+      const height =
+        listRef.current.offsetHeight +
+        listRef.current.offsetTop -
+        window.innerHeight;
+
+      // 需要滾動到下方，並且沒有在讀取中
+      if (!isLoading.current && window.scrollY >= height) {
+        currentPage.current++;
+        getPhotos(currentPage.current, false); // 應該是頁數增加1
       }
-      // console.log(`${api}?client_id=${accessKey}&query=${filterString}`);
-    })();
-  }, []);
+    };
+
+    // 滾動監聽
+    window.addEventListener("scroll", scrollEvent);
+    // 移除舊有的滾動監聽
+    return () => window.removeEventListener("scroll", scrollEvent);
+  }, [filterString]);
 
   return (
     <>
@@ -68,10 +106,12 @@ const App = () => {
         filterString={filterString}
       />
 
-      <div className="grid grid-cols-2 gap-4 p-10">
-        {jsonData.map((item) => {
-          <Card item={item} />;
-        })}
+      <div className="grid grid-cols-2 gap-4 p-10" ref={listRef}>
+        {jsonData.map((item) => (
+          <div key={item.id}>
+            <Card item={item} />
+          </div>
+        ))}
       </div>
 
       {/* 加減陣列 */}
