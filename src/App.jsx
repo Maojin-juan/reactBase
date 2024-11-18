@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import "./assets/loading.css";
 
 const api = "https://api.unsplash.com/search/photos/";
 const accessKey = "coNDSSoNoGGxRxcRA8wxmXNEfFk9Gfnhq6UxJmkCmCI";
@@ -42,6 +43,7 @@ const App = () => {
 
   const [filterString, setFilterString] = useState("cat");
   const [jsonData, setJsonData] = useState([]);
+  const [ratelimitRemaining, setRatelimitRemaining] = useState(50);
   const isLoading = useRef(false);
   const currentPage = useRef(1);
   const onSearchHandler = (e) => {
@@ -64,6 +66,8 @@ const App = () => {
         if (isNew) return [...result.data.results];
         return [...preData, ...result.data.results];
       });
+
+      setRatelimitRemaining(result.headers["x-ratelimit-remaining"]);
 
       currentPage.current = page; // 每次都需要確認當前頁面
 
@@ -101,10 +105,15 @@ const App = () => {
 
   return (
     <>
+      <div className="loading">
+        <div className="pong-loader"></div>
+      </div>
       <SearchBox
         onSearchHandler={onSearchHandler}
         filterString={filterString}
       />
+
+      <p>剩餘請求次數：{ratelimitRemaining}</p>
 
       <div className="grid grid-cols-2 gap-4 p-10" ref={listRef}>
         {jsonData.map((item) => (

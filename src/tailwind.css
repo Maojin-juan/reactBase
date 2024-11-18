@@ -15,4 +15,8 @@
   button {
     @apply rounded-md bg-blue-500 p-2 text-white hover:bg-blue-700;
   }
+
+  .loading {
+    @apply fixed inset-0 z-10 flex items-center justify-center bg-white bg-opacity-25 blur-sm;
+  }
 }
